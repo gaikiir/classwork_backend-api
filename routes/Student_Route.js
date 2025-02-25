@@ -13,14 +13,14 @@ routes.post("/student", (req, res) => {
   res.send({ type: "post Request" });
 });
 
-//update students in the database
+//update students in the database 
 
 routes.put("/student:id", (req, res) => {
   res.send({ type: "update Request" });
 });
 
 //delete a student from the database
-routes.delete("/student/:id", (req, res) => {
+routes.delete("/student:id", (req, res) => {
   res.send({ type: "delete Request" });
 });
 
