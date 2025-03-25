@@ -1,107 +1,88 @@
-const respond = require('express');//import express
+//const { response } = require('express');
+const { mongoose } = require('mongoose');
 const Student = require('../models/StudentModels');//import the student model
 const createError = require('http-errors');//import createError
-const mongoose = require('mongoose');//import mongoose
-
 // module exports 
 module.exports = {
-  // get all students route handler 
-    getAllStudents: async(request,respond,next)=>{
-      try{
-        // find all students from the database using find() method
-        const result =  await Student.find();
-        // send the result back to the client
-        respond.send(result)
-
-      } 
-      // catch block to handle any errors that occur during the process
-      catch(error){
-        console.log(error.message)
-  } 
-},
-//add a new student route handler  - adds a new student to the database  
-addStudent: async(request,respond,next)=>{
+ getAllStudents:async(request,response,next)=>{
   try{
-    // create a new student instance from the request body data
-    const student= new Student(request.body);
-// save the new student to the database using save() method
-    const result = await student.save();
-    // send the saved student back to the client
-    respond.send(result);
-
-  } 
-  // catch block to handle any errors that occur during the process
-  catch(error){
-    console.log(error.message);
-
-    // if the error is a validation error, throw a custom error
-    if(error.name === 'ValidationError'){
-      // throw a custom error for invalid data
-      next( createError('InvalidationError'));
-      return;
-    }
-    next(error);
-    }
-},
-// update a student route handler - updates an existing student in the database  
-  updateStudent: async(request,respond,next)=>{
-    try{
-      // get the id of the student to be updated from the request parameters
-     const id = request.params.id;
-     // get the updates to be made from the request body data
-     const updates = request.body;
-     // use findByIdAndUpdate() method to update the student in the database with the provided updates and options
-     const options = {new:true};
-     // send the updated student back to the client
-     const result = await Student.findByIdAndUpdate(id,updates,options);
-     // if the student does not exist, throw a custom error
-     if(!result){
-      throw(createError(404,"student does not exist, Please try again"));
-     }
-    } catch(error){
-      console.log(error.message);
-      if(error instanceof mongoose.CastError){
-        next(createError(400,"Invalid student id"));
-        return;
-      }
-      next(error);
-    }
-  },
-  // get a student by id route handler - retrieves a student from the database based on its id
-  getStudentById: async(request, respond, next)=>{
-    // get the id of the student to be retrieved from the request parameters
-     const id = request.params.id;
-    try{
-      // find the student by id from the database using findById() method
-    const student = Student.findById(id);
-    // if the student does not exist, throw a custom error
-    if(!Student){
-      throw(createError(404,"student does not exist, Please try again"));
-    }
-    }
-    catch(error){
-    console.log(error.message);
-    if(error instanceof mongoose.CastError){
-      next(createError(400,"Invalid student id"));
-      return;
-    }
+    const result = await Student.find();
+    response.send(result);
+  } catch(error){
+    console.error(err.message)
   }
 },
 
-
-deleteStudent: async(request,respond,next)=>{
+Addstudent:async(request,response,next)=>{
   try{
-    const id = request.params.id;
-    const stundet = await Student.findByIdAndDelete(id);
-    if(!stundet){
-      throw(createError(404,"student does not exist, Please try again"));
+    const student = new Student(request.body);
+    const result = student.save();
+    response.send(result);
+  }catch(error){
+    console.log(error.message);
+    if(error.name === "validationError"){
+      return next(createError(422, error.message));
     }
+    next(error);
+  }
+},
+
+getStudent:async(request,response,next)=>{
+  const  id = request.params.id;
+  try{
+    const student = await Student.findById(id);
+    if(!student){
+      throw (createError(404, "student does not exist"))
+    }
+    response.send(student);
+  }catch(error){
+    console.log(error.message);
+    if(error instanceof mongoose.CastError){
+      return next(createError(400,"Invalid student Id"))
+    }
+    next();
+  }
+},
+
+updateStudent:async(request,response,next)=>{
+  //get student by their Id 
+  const id = request.params.id;
+    console.log("Received ID:", id); // Debugging: Check if the ID is correct
+    
+  try{
+    const update = request.body;
+    const options = {new:true};
+    result = await Student.findByIdAndUpdate(id,update,options);
+    if(!result){
+      throw(createError(404,'Student does not exist'))
+    }
+    response.send(result);
   } catch(error){
     console.log(error.message);
     if(error instanceof mongoose.CastError){
-      next(createError(400,"Invalid student id"));
-      return;
+      next(createError(400, 'Invalid Student Id'));
+      return
+    }
+    next(error)
   }
-}
-}
+  },
+
+  deleteStudent:async(request,response,next)=>{
+    try{
+      const id = request.params.id;
+      const student = Student.findByIdAndDelete(id);
+      if(!student){
+        throw(createError(404,'Student does not exist'))
+      }
+      response.send(student);
+    } catch(error){
+      console.log(error.message);
+      if(error instanceof mongoose.CastError){
+        return next(createError(400, 'Invalid student Id'));
+      }
+      next(error);
+    }
+
+  }
+
 }
