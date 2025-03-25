@@ -12,7 +12,8 @@ const studentSchema = new Schema({
         required: [true, 'LastName required']
     },
     Gender:{
-        type: String
+        type: String,
+        required: [true, 'Gender is required']
     }
 });
 
