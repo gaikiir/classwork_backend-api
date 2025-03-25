@@ -1,7 +1,7 @@
 const JWT = require('jsonwebtoken');
 const createError = require('http-errors');
 
-const User = require('../models/authModel');
+
 
 module.exports = {
     signAccessToken:(UserId)=>{
@@ -49,7 +49,7 @@ module.exports = {
         const token = bearerToken[1];
         JWT.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,payload)=>{
             if(err){
-                if(err.name === 'jsonWebTokenError'){
+                if(err.name === 'JsonWebTokenError'){
                     return next(createError.Unauthorized());
                 }else{
                     return next(createError.Unauthorized(err.message));
@@ -58,5 +58,20 @@ module.exports = {
             request.payload = payload;
             next();
         })
+    },
+
+    //for cheking multiply roles ...
+    restrict:(...allowedRoles)=>{
+        return(request,respond, next)=>{
+            const userRole = request.payload.role;
+            if(!userRole || allowedRoles.includes(userRole)){
+                return next(
+                    createError.Forbidden(
+                        "Sorry! You do not have permission to perform this action"
+                    )
+                )
+            }
+            next();
+        }
     }
 }
