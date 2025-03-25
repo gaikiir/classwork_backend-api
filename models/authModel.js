@@ -11,9 +11,16 @@ const userSchema = Schema({
     password:{
         type:String,
         required:[true,'password is required']
+    },
+    role:{
+        type:String,
+        enum:['user','admin'],
+        default:'user'
     }
 });
 
+
+//hashing the password before saving it in the DB
 userSchema.pre('save', async function(next){
     try{
         const salt = await bcrypt.genSalt(10);
